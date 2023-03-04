@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 
 public class CourseController : CrudController<Course, CourseDTO>
 {
-    private readonly ICourseService _service;
+    private readonly ICourseService _courseService;
 
     public CourseController(ICourseService service) : base(service)
     {
-        _service = service;
+        _courseService = service;
     }
 
     // TODO: Combine this with the GetAll() method from the base class
@@ -20,6 +20,6 @@ public class CourseController : CrudController<Course, CourseDTO>
     [HttpGet("search")]
     public async Task<ICollection<Course>> GetCoursesByStatus([FromQuery] Course.CourseStatus status)
     {
-        return await _service.GetCoursesByStatusAsync(status);
+        return await _courseService.GetCoursesByStatusAsync(status);
     }
 }
