@@ -17,6 +17,15 @@ public class Course : BaseModel
 
     public ICollection<Student> Students { get; set; } = null!;
 
+    [NotMapped]
+    public int StudentCount { get; set; }
+
+    [NotMapped]
+    public ICollection<Student> LatestStudents { get; set; } = null!;
+
+    [Column(TypeName = "jsonb")]
+    public ICollection<string> Images { get; set; } = null!;
+
     public enum CourseStatus
     {
         NotStarted,

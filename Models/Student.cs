@@ -28,4 +28,10 @@ public class Student : BaseModel
     public Course Course { get; set; } = null!;
 
     public int CourseId { get; set; }
+
+    // Direct many-to-many
+    public ICollection<Assignment> Assignments { get; set; } = null!;
+
+    // Indirect many-to-many
+    public ICollection<ProjectStudent> ProjectLinks { get; set; } = null!;
 }
