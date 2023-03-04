@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     static AppDbContext()
     {
         NpgsqlConnection.GlobalTypeMapper.MapEnum<Course.CourseStatus>();
+        NpgsqlConnection.GlobalTypeMapper.MapEnum<ProjectRole>();
         // You can also do that automatically using Reflection
 
         // Use the legacy timestamp behaviour - check Npgsql for more details
@@ -35,6 +36,7 @@ public class AppDbContext : DbContext
     {
         // Map C# enum to Postgres enum
         modelBuilder.HasPostgresEnum<Course.CourseStatus>();
+        modelBuilder.HasPostgresEnum<ProjectRole>();
 
         // Create an index on Name using Fluent API
         modelBuilder.Entity<Course>()
@@ -43,6 +45,10 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Student>()
             .HasIndex(s => s.Email)
             .IsUnique();
+
+        // Tell EF Core to use a composite primary key
+        modelBuilder.Entity<ProjectStudent>()
+            .HasKey(ps => new { ps.ProjectId, ps.StudentId });
 
         // TODO: Do this in a better way using loop
         modelBuilder.Entity<Student>()
@@ -75,4 +81,6 @@ public class AppDbContext : DbContext
     public DbSet<Course> Courses { get; set; } = null!;
     public DbSet<Student> Students { get; set; } = null!;
     public DbSet<Address> Addresses { get; set; } = null!;
+    public DbSet<Project> Projects { get; set; } = null!;
+    public DbSet<ProjectStudent> ProjectStudents { get; set; } = null!;
 }
