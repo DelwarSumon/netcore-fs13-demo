@@ -14,6 +14,8 @@ builder.Services
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        // Fix the JSON cycle issue
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
 builder.Services.AddDbContext<AppDbContext>();
@@ -36,6 +38,8 @@ builder.Services.AddTransient<IDemoService, DemoService>();
 builder.Services.AddScoped<ICourseService, DbCourseSerivce>();
 
 builder.Services.AddScoped<IStudentService, DbStudentService>();
+builder.Services.AddScoped<IAssignmentService, DbAssignmentService>();
+builder.Services.AddScoped<IProjectService, DbProjectService>();
 
 builder.Services.Configure<CourseSetting>(builder.Configuration.GetSection("MyCourseSettings"));
 
@@ -51,7 +55,9 @@ if (app.Environment.IsDevelopment())
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetService<AppDbContext>();
-        if (dbContext is not null)
+        var config = scope.ServiceProvider.GetService<IConfiguration>();
+
+        if (dbContext is not null && config.GetValue<bool>("CreateDbAtStart", false))
         {
             dbContext.Database.EnsureDeleted();
             dbContext.Database.EnsureCreated();
