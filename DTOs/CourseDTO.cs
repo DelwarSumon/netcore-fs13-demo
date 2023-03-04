@@ -17,12 +17,15 @@ public class CourseDTO : BaseDTO<Course>, IValidatableObject
 
     public int Size { get; set; }
 
+    public ICollection<string> Images { get; set; } = null!;
+
     public override void UpdateModel(Course model)
     {
         model.Name = Name;
         model.StartDate = StartDate;
         model.Status = Status;
         model.Size = Size;
+        model.Images = Images;
     }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
