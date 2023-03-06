@@ -4,6 +4,11 @@ using NETCoreDemo.Models;
 using NETCoreDemo.DTOs;
 using NETCoreDemo.Db;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +24,18 @@ builder.Services
     });
 
 builder.Services.AddDbContext<AppDbContext>();
+
+builder.Services
+    .AddIdentity<User, IdentityRole<int>>(options =>
+    {
+        options.Password.RequiredLength = 6;
+        // DON'T do this in production
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+    })
+    .AddEntityFrameworkStores<AppDbContext>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -40,6 +57,7 @@ builder.Services.AddScoped<ICourseService, DbCourseSerivce>();
 builder.Services.AddScoped<IStudentService, DbStudentService>();
 builder.Services.AddScoped<IAssignmentService, DbAssignmentService>();
 builder.Services.AddScoped<IProjectService, DbProjectService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.Configure<CourseSetting>(builder.Configuration.GetSection("MyCourseSettings"));
 
