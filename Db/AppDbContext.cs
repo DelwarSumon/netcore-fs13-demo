@@ -1,11 +1,12 @@
-using System.Reflection;
 namespace NETCoreDemo.Db;
 
 using Microsoft.EntityFrameworkCore;
 using NETCoreDemo.Models;
 using Npgsql;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
     // Static constructor which will be run ONCE
     static AppDbContext()
@@ -25,6 +26,9 @@ public class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        // Call the OnConfiguring of the base class
+        base.OnConfiguring(optionsBuilder);
+
         var connString = _config.GetConnectionString("DefaultConnection");
         optionsBuilder
             .UseNpgsql(connString)
@@ -34,6 +38,8 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         // Map C# enum to Postgres enum
         modelBuilder.HasPostgresEnum<Course.CourseStatus>();
         modelBuilder.HasPostgresEnum<ProjectRole>();
@@ -75,7 +81,9 @@ public class AppDbContext : DbContext
         // Always load Address along with the Student
         // modelBuilder.Entity<Student>().Navigation(s => s.Address).AutoInclude();
 
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.AddIdentityConfig();
+
+        // TODO: Put specific entity config into extension methods
     }
 
     public DbSet<Course> Courses { get; set; } = null!;
