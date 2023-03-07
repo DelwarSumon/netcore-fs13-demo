@@ -11,7 +11,7 @@ public class DbStudentService : DbCrudService<Student, StudentDTO>, IStudentServ
     {
     }
 
-    public override async Task<ICollection<Student>> GetAllAsync()
+    public override async Task<ICollection<Student>> GetAllAsync(ICrudFilter? filter)
     {
         return await _dbContext.Students
             .AsNoTracking()
