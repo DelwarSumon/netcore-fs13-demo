@@ -1,3 +1,4 @@
+using System.Text;
 using NETCoreDemo.Services;
 using System.Text.Json.Serialization;
 using NETCoreDemo.Models;
@@ -37,6 +38,64 @@ builder.Services
     })
     .AddEntityFrameworkStores<AppDbContext>();
 
+builder.Services
+    .AddAuthentication(option =>
+    {
+        option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("FS13", policy =>
+    {
+        policy.RequireClaim("Course", "FS13");
+    });
+
+    options.AddPolicy("PremiumSubscriber", policy =>
+    {
+        policy.RequireClaim("subscriptionLevel", "Premium");
+    });
+
+    options.AddPolicy("MeOnly", policy =>
+    {
+        policy.RequireUserName("daniel.monero@gmail.com");
+    });
+    options.AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireRole("Admin"); // === [Authorsize(Roles = "Admin")]
+    });
+
+    // Allow access only if:
+    // - Has admin role
+    // - Age > 18
+    // - Never miss a lecture
+    // - Frontend score: > 4
+
+    options.AddPolicy("Custom", policy =>
+    {
+        policy.RequireAssertion(handler =>
+        {
+            // Do something to determine if user has access
+            // Get back the user object and do the checks
+            return true;
+        });
+    });
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -58,6 +117,7 @@ builder.Services.AddScoped<IStudentService, DbStudentService>();
 builder.Services.AddScoped<IAssignmentService, DbAssignmentService>();
 builder.Services.AddScoped<IProjectService, DbProjectService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
 
 builder.Services.Configure<CourseSetting>(builder.Configuration.GetSection("MyCourseSettings"));
 
@@ -84,6 +144,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// This has to be before app.UseAuthorization()
+app.UseAuthentication();
 
 app.UseAuthorization();
 
