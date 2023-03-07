@@ -8,16 +8,27 @@ public class UserService : IUserService
 {
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<IdentityRole<int>> _roleManager;
+    private readonly ITokenService _tokenService;
 
-    public UserService(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
+    public UserService(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager, ITokenService tokenService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _tokenService = tokenService;
     }
 
-    public Task<UserSignInResponseDTO?> SignInAsync(UserSignInDTO request)
+    public async Task<UserSignInResponseDTO?> SignInAsync(UserSignInDTO request)
     {
-        throw new NotImplementedException();
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user is null)
+        {
+            return null;
+        }
+        if (!await _userManager.CheckPasswordAsync(user, request.Password))
+        {
+            return null;
+        }
+        return await _tokenService.GenerateTokenAsync(user);
     }
 
     public async Task<User?> SignUpAsync(UserSignUpDTO request)
