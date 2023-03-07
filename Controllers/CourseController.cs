@@ -4,7 +4,10 @@ using NETCoreDemo.Services;
 using NETCoreDemo.Models;
 using NETCoreDemo.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using NETCoreDemo.Common;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize(Roles = "Admin")]
 public class CourseController : CrudController<Course, CourseDTO>
 {
     private readonly ICourseService _courseService;
@@ -17,9 +20,11 @@ public class CourseController : CrudController<Course, CourseDTO>
     // TODO: Combine this with the GetAll() method from the base class
     // 1. If no status is given on query string, return all
     // 2. Otherwise, filter the courses by status
-    [HttpGet("search")]
-    public async Task<ICollection<Course>> GetCoursesByStatus([FromQuery] Course.CourseStatus status)
+    [HttpGet]
+    public override async Task<ICollection<Course>> GetAll()
     {
-        return await _courseService.GetCoursesByStatusAsync(status);
+        // TODO: Do this but using an extra generic type for the controller and service
+        var filter = Request.QueryString.ParseParams<CourseFilterDTO>();
+        return await _courseService.GetAllAsync(filter);
     }
 }

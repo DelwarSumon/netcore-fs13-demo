@@ -60,8 +60,8 @@ public abstract class CrudController<TModel, TDto> : ApiControllerBase
     }
 
     [HttpGet]
-    public async Task<ICollection<TModel>> GetAll()
+    public virtual async Task<ICollection<TModel>> GetAll()
     {
-        return await _service.GetAllAsync();
+        return await _service.GetAllAsync(null);
     }
 }

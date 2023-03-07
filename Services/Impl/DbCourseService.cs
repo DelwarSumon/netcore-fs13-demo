@@ -11,29 +11,20 @@ public class DbCourseSerivce : DbCrudService<Course, CourseDTO>, ICourseService
     {
     }
 
-    public override async Task<ICollection<Course>> GetAllAsync()
+    public override async Task<ICollection<Course>> GetAllAsync(ICrudFilter? filter)
     {
-        Func<Course, Course> process = course =>
+        var courseFilter = (CourseFilterDTO?)filter;
+        var query = _dbContext.Courses.Where(c => true);
+
+        if (courseFilter?.Status is not null)
         {
-            course.StudentCount = course.Students.Count();
-            return course;
-        };
-        var items = await _dbContext.Courses
-            .Select(c => new
-                {
-                    Course = c,
-                    StudentCount = c.Students.Count(),
-                    LatestStudents = c.Students.OrderByDescending(s => s.CreatedAt).Take(5),
-                }
-            )
-            .Where(c => c.StudentCount >= 1)
-            .ToListAsync();
-        foreach (var item in items)
+            query = query.Where(c => c.Status == courseFilter.Status);
+        }
+        if (courseFilter?.Keyword is not null && !string.IsNullOrEmpty(courseFilter?.Keyword))
         {
-            item.Course.StudentCount = item.StudentCount;
-            item.Course.LatestStudents = item.LatestStudents.ToList();
-        };
-        return items.Select(item => item.Course).ToList();
+            query = query.Where(c => c.Name.Contains(courseFilter!.Keyword));
+        }
+        return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();
     }
 
     public override async Task<Course?> GetAsync(int id)

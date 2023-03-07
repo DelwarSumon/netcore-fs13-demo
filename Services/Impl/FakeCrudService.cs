@@ -49,7 +49,7 @@ public class FakeCrudService<TModel, TDto> : ICrudService<TModel, TDto>
         });
     }
 
-    public Task<ICollection<TModel>> GetAllAsync()
+    public Task<ICollection<TModel>> GetAllAsync(ICrudFilter? filter)
     {
         return Task.FromResult(_items.Values);
     }
